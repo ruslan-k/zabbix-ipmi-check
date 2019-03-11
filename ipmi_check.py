@@ -44,6 +44,8 @@ def get_ipmi_data(ipmi_address, username, password):
         raise Exception(output.strip())
     elif "connection timeout" in output:
         raise Exception(output.strip())
+    elif "internal IPMI error" in output:
+        raise Exception(output.strip())
     return output
 
 
