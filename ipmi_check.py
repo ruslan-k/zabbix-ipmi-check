@@ -42,6 +42,8 @@ def get_ipmi_data(ipmi_address, username, password):
         raise Exception("freeipmi is not installed")
     elif "invalid hostname" in output:
         raise Exception(output.strip())
+    elif "connection timeout" in output:
+        raise Exception(output.strip())
     return output
 
 
