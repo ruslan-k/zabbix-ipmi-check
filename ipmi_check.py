@@ -117,7 +117,7 @@ def main():
         sender_data_file = "/tmp/{}.zbx".format(hostname_formatted)
         append_sensor_item_data(sensors_data, sender_data_file)
         if is_midnight():
-            append_sensor_discovery_data(ipmidata, sender_data_file)
+            append_sensor_discovery_data(sensors_data, sender_data_file)
         send_data(args.hostname, sender_data_file)
         remove_sender_file(sender_data_file)
         print("OK")
