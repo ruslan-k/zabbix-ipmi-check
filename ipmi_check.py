@@ -10,6 +10,10 @@ import json
 
 SENDER_TIMEOUT = 3
 IPMI_TIMEOUT = 5
+VOLT_PERCENT_RANGE = 10
+VBAT_NORMAL_VOLTAGE = 3.2
+CPU_VOLTAGE_MIN = 0.9
+CPU_VOLTAGE_MAX = 1.3
 
 
 def get_args():
@@ -34,6 +38,11 @@ def syscmd(cmd):
     return p.returncode
 
 
+def get_voltage_sensor_type(sensor_name):
+    voltage_sensor_type = re.search("([\-\.\d]+V|CPU|VBAT)", sensor_name).group(1)
+    return voltage_sensor_type
+
+
 def get_ipmi_data(ipmi_address, username, password):
     command = "ipmi-sensors -h {} -u {} -p {} -l user --session-timeout={}".format(ipmi_address, username, password,
                                                                                    IPMI_TIMEOUT * 1000)
@@ -45,7 +54,7 @@ def get_ipmi_data(ipmi_address, username, password):
     elif "connection timeout" in output:
         raise Exception(output.strip())
     elif "internal IPMI error" in output:
-        raise Exception(output.strip())
+        raise Exception("ipmi_sensor_read: internal IPMI error")
     return output
 
 
@@ -56,6 +65,15 @@ def listed_sensors_data(data):
         if len(sensors_params) == 6 and sensors_params[3] != "N/A":
             sensors_list.append(sensors_params)
     return sensors_list
+
+
+def get_min_max_voltage_threshold(num):
+    procent_change = ((num / 100) * VOLT_PERCENT_RANGE)
+    min_treshold = round(num - procent_change, 2)
+    max_treshold = round(num + procent_change, 2)
+    if num < 0:
+        return max_treshold, min_treshold
+    return min_treshold, max_treshold
 
 
 def append_sensor_discovery_data(data, sender_data_file):
@@ -70,7 +88,24 @@ def append_sensor_discovery_data(data, sender_data_file):
         if sensor_type == "Temperature":
             discovery_data['temperature_sensors']["data"].append({"{#TEMP_SENSOR_NAME}": sensor_name})
         elif sensor_type == "Voltage":
-            discovery_data['voltage_sensors']["data"].append({"{#VOLT_SENSOR_NAME}": sensor_name})
+            voltage_sensors_discovery_data = {}
+            voltage_sensors_discovery_data["{#VOLT_SENSOR_NAME}"] = sensor_name
+            voltage_sensor_type = get_voltage_sensor_type(sensor_name)
+            if voltage_sensor_type.endswith("V"):
+                voltage_numeric = float(voltage_sensor_type.strip("V"))
+                voltage_threshord_level_min, voltage_threshord_level_max = get_min_max_voltage_threshold(
+                    voltage_numeric)
+                voltage_sensors_discovery_data["{#VOLT_SENSOR_MIN_THR}"] = voltage_threshord_level_min
+                voltage_sensors_discovery_data["{#VOLT_SENSOR_MAX_THR}"] = voltage_threshord_level_max
+            elif voltage_sensor_type == "CPU":
+                voltage_sensors_discovery_data["{#VOLT_SENSOR_MIN_THR}"] = CPU_VOLTAGE_MIN
+                voltage_sensors_discovery_data["{#VOLT_SENSOR_MAX_THR}"] = CPU_VOLTAGE_MAX
+            elif voltage_sensor_type == ("VBAT"):
+                voltage_threshord_level_min, voltage_threshord_level_max = get_min_max_voltage_threshold(
+                    VBAT_NORMAL_VOLTAGE)
+                voltage_sensors_discovery_data["{#VOLT_SENSOR_MIN_THR}"] = voltage_threshord_level_min
+                voltage_sensors_discovery_data["{#VOLT_SENSOR_MAX_THR}"] = voltage_threshord_level_max
+            discovery_data['voltage_sensors']["data"].append(voltage_sensors_discovery_data)
         elif sensor_type == "Fan":
             discovery_data['fan_sensors']["data"].append({"{#FAN_SENSOR_NAME}": sensor_name})
     for key, value in discovery_data.items():
