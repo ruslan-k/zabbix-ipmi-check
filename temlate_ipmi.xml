@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>4.0</version>
-    <date>2019-03-07T20:53:27Z</date>
+    <date>2019-03-15T16:10:20Z</date>
     <groups>
         <group>
             <name>Templates</name>
@@ -189,7 +189,46 @@
                             <master_item/>
                         </item_prototype>
                     </item_prototypes>
-                    <trigger_prototypes/>
+                    <trigger_prototypes>
+                        <trigger_prototype>
+                            <expression>{Template IPMI:Fan[&quot;{#FAN_SENSOR_NAME}&quot;].last()}&lt;1000</expression>
+                            <recovery_mode>0</recovery_mode>
+                            <recovery_expression/>
+                            <name>{HOST.NAME}: {#FAN_SENSOR_NAME} speed is slow</name>
+                            <correlation_mode>0</correlation_mode>
+                            <correlation_tag/>
+                            <url/>
+                            <status>0</status>
+                            <priority>4</priority>
+                            <description/>
+                            <type>0</type>
+                            <manual_close>0</manual_close>
+                            <dependencies/>
+                            <tags/>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>{Template IPMI:Fan[&quot;{#FAN_SENSOR_NAME}&quot;].last()}&lt;4000</expression>
+                            <recovery_mode>0</recovery_mode>
+                            <recovery_expression/>
+                            <name>{HOST.NAME}: {#FAN_SENSOR_NAME} speed is slow</name>
+                            <correlation_mode>0</correlation_mode>
+                            <correlation_tag/>
+                            <url/>
+                            <status>0</status>
+                            <priority>3</priority>
+                            <description/>
+                            <type>0</type>
+                            <manual_close>0</manual_close>
+                            <dependencies>
+                                <dependency>
+                                    <name>{HOST.NAME}: {#FAN_SENSOR_NAME} speed is slow</name>
+                                    <expression>{Template IPMI:Fan[&quot;{#FAN_SENSOR_NAME}&quot;].last()}&lt;1000</expression>
+                                    <recovery_expression/>
+                                </dependency>
+                            </dependencies>
+                            <tags/>
+                        </trigger_prototype>
+                    </trigger_prototypes>
                     <graph_prototypes/>
                     <host_prototypes/>
                     <jmx_endpoint/>
@@ -307,7 +346,46 @@
                             <master_item/>
                         </item_prototype>
                     </item_prototypes>
-                    <trigger_prototypes/>
+                    <trigger_prototypes>
+                        <trigger_prototype>
+                            <expression>{Template IPMI:Temperature[&quot;{#TEMP_SENSOR_NAME}&quot;].last()}&gt;50</expression>
+                            <recovery_mode>0</recovery_mode>
+                            <recovery_expression/>
+                            <name>{HOST.NAME}: {#TEMP_SENSOR_NAME} is over 50 °C</name>
+                            <correlation_mode>0</correlation_mode>
+                            <correlation_tag/>
+                            <url/>
+                            <status>0</status>
+                            <priority>3</priority>
+                            <description/>
+                            <type>0</type>
+                            <manual_close>0</manual_close>
+                            <dependencies>
+                                <dependency>
+                                    <name>{HOST.NAME}: {#TEMP_SENSOR_NAME} is over 60 °C</name>
+                                    <expression>{Template IPMI:Temperature[&quot;{#TEMP_SENSOR_NAME}&quot;].last()}&gt;60</expression>
+                                    <recovery_expression/>
+                                </dependency>
+                            </dependencies>
+                            <tags/>
+                        </trigger_prototype>
+                        <trigger_prototype>
+                            <expression>{Template IPMI:Temperature[&quot;{#TEMP_SENSOR_NAME}&quot;].last()}&gt;60</expression>
+                            <recovery_mode>0</recovery_mode>
+                            <recovery_expression/>
+                            <name>{HOST.NAME}: {#TEMP_SENSOR_NAME} is over 60 °C</name>
+                            <correlation_mode>0</correlation_mode>
+                            <correlation_tag/>
+                            <url/>
+                            <status>0</status>
+                            <priority>4</priority>
+                            <description/>
+                            <type>0</type>
+                            <manual_close>0</manual_close>
+                            <dependencies/>
+                            <tags/>
+                        </trigger_prototype>
+                    </trigger_prototypes>
                     <graph_prototypes/>
                     <host_prototypes/>
                     <jmx_endpoint/>
@@ -422,7 +500,24 @@
                             <master_item/>
                         </item_prototype>
                     </item_prototypes>
-                    <trigger_prototypes/>
+                    <trigger_prototypes>
+                        <trigger_prototype>
+                            <expression>{Template IPMI:Voltage[&quot;{#VOLT_SENSOR_NAME}&quot;].last()}&lt;{#VOLT_SENSOR_MIN_THR} or {Template IPMI:Voltage[&quot;{#VOLT_SENSOR_NAME}&quot;].last()}&gt;{#VOLT_SENSOR_MAX_THR}</expression>
+                            <recovery_mode>0</recovery_mode>
+                            <recovery_expression/>
+                            <name>{HOST.NAME}: {#VOLT_SENSOR_NAME} voltage is outside of range</name>
+                            <correlation_mode>0</correlation_mode>
+                            <correlation_tag/>
+                            <url/>
+                            <status>0</status>
+                            <priority>4</priority>
+                            <description/>
+                            <type>0</type>
+                            <manual_close>0</manual_close>
+                            <dependencies/>
+                            <tags/>
+                        </trigger_prototype>
+                    </trigger_prototypes>
                     <graph_prototypes/>
                     <host_prototypes/>
                     <jmx_endpoint/>
@@ -451,4 +546,22 @@
             <screens/>
         </template>
     </templates>
+    <triggers>
+        <trigger>
+            <expression>{Template IPMI:ipmi_check.py[&quot;-u {$IPMI_USER}&quot;,&quot;-p {$IPMI_PASS}&quot;,{HOST.HOST},{HOST.HOST}].str(OK)}=0</expression>
+            <recovery_mode>0</recovery_mode>
+            <recovery_expression/>
+            <name>{HOST.NAME}: IPMI status check problem</name>
+            <correlation_mode>0</correlation_mode>
+            <correlation_tag/>
+            <url/>
+            <status>0</status>
+            <priority>4</priority>
+            <description/>
+            <type>0</type>
+            <manual_close>0</manual_close>
+            <dependencies/>
+            <tags/>
+        </trigger>
+    </triggers>
 </zabbix_export>
